@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+
+  postgres:
+    image : 'postgres:14.0'
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes: 
+      - ./db-data/postgres/:/var/lib/postgresql/data
+    networks:
+      - vnexpress_project_nw
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    networks:
+      - vnexpress_project_nw
+
+  crawl-sv:
+    build:
+      context: ./crawl-service
+      dockerfile: crawl-service.Dockerfile
+    restart: always
+    ports:
+      - "${CRAWL_SERVICE_PORT}:8080"
+    depends_on:
+      - postgres
+    networks:
+      - vnexpress_project_nw
+
+  article_sv:
+    build:
+      context: ./article-service
+      dockerfile: article-service.Dockerfile
+    restart: always
+    ports:
+      - "${ARTICLE_SERVICE_PORT}:9090"
+    depends_on:
+      - postgres
+    networks:
+      - vnexpress_project_nw
+
+networks:
+  vnexpress_project_nw:
+    driver: bridge
