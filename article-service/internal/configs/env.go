@@ -1,4 +1,4 @@
-package config
+package configs
 
 import (
 	"log"
@@ -22,7 +22,6 @@ func LoadEnv() *EnvConfig {
 	if err != nil {
 		log.Println("not found .env file.")
 	}
-
 	return &EnvConfig{
 		POSTGRES_HOST:     os.Getenv("POSTGRES_HOST"),
 		POSTGRES_USER:     os.Getenv("POSTGRES_USER"),

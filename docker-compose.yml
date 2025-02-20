@@ -51,6 +51,8 @@ services:
       - "${ARTICLE_SERVICE_PORT}:9090"
     depends_on:
       - postgres
+    environment:
+      DSN: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable timezone=UTC connect_timeout=5"
     networks:
       - vnexpress_project_nw
 
