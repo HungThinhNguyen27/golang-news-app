@@ -1,3 +1,5 @@
-db-data/postgres
 .env
+db-data/postgres
 .DS_Store
+crawl-service/.DS_Store
+local.yaml
