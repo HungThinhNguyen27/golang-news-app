@@ -4,6 +4,7 @@ services:
 
   postgres:
     image : 'postgres:14.0'
+    container_name: postgres
     ports:
       - "${POSTGRES_PORT}:5432"
     restart: always
@@ -34,6 +35,7 @@ services:
     build:
       context: ./crawl-service
       dockerfile: crawl-service.Dockerfile
+    container_name: crawl-sv
     restart: always
     ports:
       - "${CRAWL_SERVICE_PORT}:8080"
@@ -46,6 +48,7 @@ services:
     build:
       context: ./article-service
       dockerfile: article-service.Dockerfile
+    container_name: article_sv
     restart: always
     ports:
       - "${ARTICLE_SERVICE_PORT}:9090"
@@ -55,6 +58,23 @@ services:
       DSN: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable timezone=UTC connect_timeout=5"
     networks:
       - vnexpress_project_nw
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    privileged: true
+    user: root
+    ports:
+      - "9898:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      
+volumes:
+  jenkins_home:
 
 networks:
   vnexpress_project_nw:
