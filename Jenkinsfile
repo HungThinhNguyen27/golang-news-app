@@ -4,13 +4,9 @@ pipeline {
     tools {
         go '1.24.0'
     }
-
-    parameters {
-        choice(name: 'SERVICE', choices: ['crawl-service', 'article-service'], description: 'Select the service to build & test')
-    }
-
+    
     environment {
-        WORKDIR = "${WORKSPACE}/${params.SERVICE}"
+        CHANGED_SERVICES = ''
     }
 
     stages {
@@ -23,26 +19,50 @@ pipeline {
             }
         }
 
-        stage('Check Go Version') {
-            steps {
-                sh 'go version'
-            }
-        }
-
-        stage('Download Dependencies') {
+        stage('Detect Changed Services') {
             steps {
                 script {
-                    echo "Downloading dependencies for ${WORKDIR}..."
-                    sh "cd ${WORKDIR} && go mod tidy"
+                    echo "Checking for changed services..."
+                    def changedFiles = sh(script: 'git diff --name-only HEAD~1', returnStdout: true).trim().split('\n')
+                    
+                    def services = ['crawl-service', 'article-service']
+                    def changedServices = []
+
+                    for (service in services) {
+                        if (changedFiles.any { it.startsWith(service + "/") }) {
+                            changedServices.add(service)
+                        }
+                    }
+
+                    CHANGED_SERVICES = changedServices.join(' ')
+                    if (CHANGED_SERVICES == '') {
+                        echo "No services changed. Skipping build."
+                        currentBuild.result = 'SUCCESS'
+                        return
+                    }
+                    
+                    echo "Services to build: ${CHANGED_SERVICES}"
                 }
             }
         }
 
-        stage('Run Unit Tests') {
+        stage('Build & Test Changed Services') {
+            when {
+                expression { return CHANGED_SERVICES != '' }
+            }
             steps {
                 script {
-                    echo "Running unit tests for ${WORKDIR}..."
-                    sh "cd ${WORKDIR} && go test ./... -v"
+                    for (service in CHANGED_SERVICES.split(' ')) {
+                        def workdir = "${WORKSPACE}/${service}"
+                        
+                        echo "Building & Testing ${service}..."
+
+                        sh """
+                        cd ${workdir}
+                        go mod tidy
+                        go test ./... -v
+                        """
+                    }
                 }
             }
         }
@@ -53,16 +73,6 @@ pipeline {
             script {
                 echo "Cleaning up workspace..."
                 deleteDir()
-            }
-        }
-        success {
-            script {
-                echo "Unit tests passed for ${WORKDIR}!"
-            }
-        }
-        failure {
-            script {
-                echo "Unit tests failed for ${WORKDIR}!"
             }
         }
     }
