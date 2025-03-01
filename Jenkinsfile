@@ -1,12 +1,15 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'golang:1.23'
+        }
+    }
 
     parameters {
         choice(name: 'SERVICE', choices: ['crawl-service', 'article-service'], description: 'Select the service to build & test')
     }
 
     environment {
-        GO_VERSION = "1.23" 
         WORKDIR = "${params.SERVICE}" 
     }
 
