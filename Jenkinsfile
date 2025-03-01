@@ -1,13 +1,16 @@
 pipeline {
     agent any
 
+    tools {
+        go '1.24.0'
+    }
+
     parameters {
         choice(name: 'SERVICE', choices: ['crawl-service', 'article-service'], description: 'Select the service to build & test')
     }
 
     environment {
-        GO_VERSION = "1.23" 
-        WORKDIR = "${params.SERVICE}" 
+        WORKDIR = "${WORKSPACE}/${params.SERVICE}"
     }
 
     stages {
@@ -20,12 +23,9 @@ pipeline {
             }
         }
 
-        stage('Setup Go Environment') {
+        stage('Check Go Version') {
             steps {
-                script {
-                    echo "Setting up Go environment..."
-                    sh "go version"
-                }
+                sh 'go version'
             }
         }
 
@@ -57,12 +57,12 @@ pipeline {
         }
         success {
             script {
-                echo "✅ Unit tests passed for ${WORKDIR}!"
+                echo "Unit tests passed for ${WORKDIR}!"
             }
         }
         failure {
             script {
-                echo "❌ Unit tests failed for ${WORKDIR}!"
+                echo "Unit tests failed for ${WORKDIR}!"
             }
         }
     }
