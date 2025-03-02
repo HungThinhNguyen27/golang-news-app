@@ -16,7 +16,7 @@ func main() {
 	}
 
 	c := cron.New()
-	jobID, err := c.AddFunc("@every 90m", func() {
+	jobID, err := c.AddFunc("@every 120m", func() {
 		log.Println("Starting scheduled crawling task at", time.Now().In(loc))
 		crawler.CrawlArticles()
 	})
@@ -28,7 +28,7 @@ func main() {
 	c.Start()
 
 	schedule := c.Entry(jobID).Next.In(loc)
-	log.Println("Scheduler started. Crawling will run every  1 hour 30 min")
+	log.Println("Scheduler started. Crawling will run every  2 hour")
 	log.Println("Next run scheduled at:", schedule)
 	select {}
 }
