@@ -41,6 +41,8 @@ services:
       - "${CRAWL_SERVICE_PORT}:8080"
     depends_on:
       - postgres
+    environment:
+      DSN: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable timezone=UTC connect_timeout=5"
     networks:
       - vnexpress_project_nw
 
@@ -65,17 +67,21 @@ services:
     privileged: true
     user: root
     ports:
-      - "9898:8080"
+      - "9595:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-      
+
 volumes:
   jenkins_home:
-
+    driver: local
+    
 networks:
   vnexpress_project_nw:
     driver: bridge
+
+
+    # docker run -p 9797:8080 -p 50000:50000 -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts

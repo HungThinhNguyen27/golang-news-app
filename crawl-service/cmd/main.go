@@ -4,11 +4,9 @@ import (
 	"crawl-service/config"
 	"crawl-service/crawler"
 	"crawl-service/models"
-	"crawl-service/storage"
 	postgres "crawl-service/storage/postgres"
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"log"
 )
 
@@ -19,20 +17,16 @@ func generateMD5(content string) string {
 
 func main() {
 
-	// Load file .env
-	env := config.LoadEnv()
-	storage.InitExcelFile()
-
 	// connect database
 	db := postgres.ConnectToDB()
 	postgres.CreateArticlesTable(db) // IF NOT EXIST
 
 	// crawl data
-	CategoriesURL := crawler.FetchCategories(env.BaseURL, env.AllowedDomains)
+	CategoriesURL := crawler.FetchCategories(config.BASE_URL, config.ALLOWED_DOMAINS)
 	for _, categoryURL := range CategoriesURL {
-		articlesURL := crawler.FetchArticlesURL(categoryURL, env.AllowedDomains)
+		articlesURL := crawler.FetchArticlesURL(categoryURL, config.ALLOWED_DOMAINS)
 		for _, articleURL := range articlesURL { // syntax _ is index
-			articleDetail := crawler.FetchArticleDetail(articleURL, env.AllowedDomains)
+			articleDetail := crawler.FetchArticleDetail(articleURL, config.ALLOWED_DOMAINS)
 			// Check if there is missing data then ignore
 			if articleDetail.Title == "" || articleDetail.Content == "" || articleDetail.Category == "" || articleDetail.PublishedDate == "" {
 				log.Println("skip article:", articleURL)
@@ -55,10 +49,12 @@ func main() {
 				Content:       articleDetail.Content,
 				Hash:          newHash,
 			}
-			postgres.SaveArticle(db, article)
-			storage.SaveExcelFormat(article, articleURL)
+			err := postgres.SaveArticle(db, article)
+			if err != nil {
+				log.Println("Failed to save article:", err)
+			} else {
+				log.Println("Article saved successfully!")
+			}
 		}
 	}
-	storage.SaveExcelFile(env.ExcelFile)
-	fmt.Println("Crawl complete, data has been saved", env.ExcelFile)
 }

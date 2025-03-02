@@ -1,10 +1,9 @@
 package postgres
 
 import (
-	"crawl-service/config"
 	"database/sql"
-	"fmt"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -24,12 +23,7 @@ func OpenDB(dsn string) (*sql.DB, error) {
 }
 
 func ConnectToDB() *sql.DB {
-	env := config.LoadEnv()
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		env.POSTGRES_HOST, env.POSTGRES_PORT, env.POSTGRES_USER, env.POSTGRES_PASSWORD, env.POSTGRES_DB,
-	)
-
+	dsn := os.Getenv("DSN")
 	var counts int
 	for {
 		connection, err := OpenDB(dsn)
