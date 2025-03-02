@@ -22,8 +22,7 @@ func CrawlArticles() []models.Article {
 	db := postgres.ConnectToDB()
 	postgres.CreateArticlesTable(db)
 
-	// crawl category URL in Vnexpress
-	categoryURLs := FetchCategories(config.BASE_URL, config.ALLOWED_DOMAINS)
+	categoryURLs := FetchCategories(config.BASE_URL, config.ALLOWED_DOMAINS) // crawl category URL in Vnexpress
 	for _, categoryURL := range categoryURLs {
 		articleURLs := FetchArticlesURL(categoryURL, config.ALLOWED_DOMAINS) // get article urls in category page
 		for _, articleURL := range articleURLs {
