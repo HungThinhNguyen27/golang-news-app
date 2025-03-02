@@ -7,6 +7,7 @@ toolchain go1.24.0
 require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/lib/pq v1.10.9
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/stretchr/testify v1.8.4
 	github.com/xuri/excelize/v2 v2.9.0
 )
