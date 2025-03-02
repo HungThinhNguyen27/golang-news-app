@@ -16,7 +16,7 @@ func main() {
 	}
 
 	c := cron.New()
-	jobID, err := c.AddFunc("@every 5m", func() {
+	jobID, err := c.AddFunc("@every 90m", func() {
 		log.Println("Starting scheduled crawling task at", time.Now().In(loc))
 		crawler.CrawlArticles()
 	})
