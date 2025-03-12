@@ -1,13 +1,13 @@
 module crawl-service
 
-go 1.23
+go 1.23.0
 
 toolchain go1.24.0
 
 require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/lib/pq v1.10.9
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.10.0
 	github.com/xuri/excelize/v2 v2.9.0
 )
 
@@ -28,11 +28,11 @@ require (
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
-	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
-	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	github.com/xuri/efp v0.0.0-20250227110027-3491fafc2b79 // indirect
+	github.com/xuri/nfp v0.0.0-20250226145837-86d5fc24b2ba // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
