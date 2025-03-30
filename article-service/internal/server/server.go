@@ -4,8 +4,10 @@ import (
 	"article-service/internal/configs"
 	"article-service/internal/routes"
 	"article-service/internal/services"
+	"article-service/internal/storage/elasticsearch"
 	"article-service/internal/storage/postgres"
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,7 +20,7 @@ import (
 type App struct {
 	Config         *configs.Config
 	Storage        *postgres.Postgres
-	ArticleService *services.ArticleService
+	ArticleService *services.ArticleServiceWithES
 	Router         *http.ServeMux
 	Server         *http.Server
 }
@@ -33,8 +35,14 @@ func NewApp() (*App, error) {
 		return nil, err
 	}
 
+	// ES
+	EsStorage, err := elasticsearch.InitElasticsearch()
+	if err != nil {
+		fmt.Println("Error initializing Elasticsearch:", err)
+	}
+
 	// Initialize service
-	articleService := services.NewArticleService(storage)
+	articleService := services.NewArticleServiceWithES(EsStorage)
 
 	// Setup router
 	router := routes.SetupRouter(articleService)

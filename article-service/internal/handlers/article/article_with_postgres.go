@@ -16,17 +16,17 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// ArticleHandler handles HTTP requests for articles
-type ArticleHandler struct {
-	service *service.ArticleService
+// ArticleHandlerWithPostgres handles HTTP requests for articles
+type ArticleHandlerWithPostgres struct {
+	service *service.ArticleServiceWithPostgres
 }
 
-// NewArticleHandler creates a new ArticleHandler
-func NewArticleHandler(s *service.ArticleService) *ArticleHandler {
-	return &ArticleHandler{service: s}
+// NewArticleHandlerWithPostgres creates a new ArticleHandler
+func NewArticleHandlerWithPostgres(s *service.ArticleServiceWithPostgres) *ArticleHandlerWithPostgres {
+	return &ArticleHandlerWithPostgres{service: s}
 }
 
-func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+func (h *ArticleHandlerWithPostgres) GetByID(w http.ResponseWriter, r *http.Request) {
 	// Extract the article ID from the URL path
 	id := r.PathValue("id")
 	slog.Info("Fetching article", slog.String("id", id))
@@ -52,7 +52,7 @@ func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetList handles the GET /api/articles request
-func (h *ArticleHandler) GetList(w http.ResponseWriter, r *http.Request) {
+func (h *ArticleHandlerWithPostgres) GetList(w http.ResponseWriter, r *http.Request) {
 	// Default values
 	maxLimit := 100
 	page := 1
@@ -94,7 +94,7 @@ func (h *ArticleHandler) GetList(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *ArticleHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *ArticleHandlerWithPostgres) Delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	slog.Info("Fetching article", slog.String("id", id))
 
@@ -117,7 +117,7 @@ func (h *ArticleHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	response.WriteJson(w, http.StatusOK, map[string]string{"message": "Article deleted successfully ", "article ID": id})
 }
 
-func (h *ArticleHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *ArticleHandlerWithPostgres) Update(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	slog.Info("Update article ID ", slog.String("id", id))
 	intID, err := strconv.ParseInt(id, 10, 64)
@@ -140,7 +140,7 @@ func (h *ArticleHandler) Update(w http.ResponseWriter, r *http.Request) {
 	response.WriteJson(w, http.StatusOK, map[string]string{"message": "Article updated successfully", "article ID": id})
 }
 
-func (h *ArticleHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *ArticleHandlerWithPostgres) Create(w http.ResponseWriter, r *http.Request) {
 	var newArticle models.Article
 
 	err := json.NewDecoder(r.Body).Decode(&newArticle)

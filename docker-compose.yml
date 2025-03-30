@@ -31,20 +31,20 @@ services:
     networks:
       - vnexpress_project_nw
 
-  crawl-sv:
-    build:
-      context: ./crawl-service
-      dockerfile: crawl-service.Dockerfile
-    container_name: crawl-sv
-    restart: always
-    ports:
-      - "${CRAWL_SERVICE_PORT}:8080"
-    depends_on:
-      - postgres
-    environment:
-      DSN: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable timezone=UTC connect_timeout=5"
-    networks:
-      - vnexpress_project_nw
+  # crawl-sv:
+  #   build:
+  #     context: ./crawl-service
+  #     dockerfile: crawl-service.Dockerfile
+  #   container_name: crawl-sv
+  #   restart: always
+  #   ports:
+  #     - "${CRAWL_SERVICE_PORT}:8080"
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     DSN: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable timezone=UTC connect_timeout=5"
+  #   networks:
+  #     - vnexpress_project_nw
 
   article_sv:
     build:
@@ -60,20 +60,20 @@ services:
       DSN: "host=${POSTGRES_HOST} port=${POSTGRES_PORT} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} sslmode=disable timezone=UTC connect_timeout=5"
     networks:
       - vnexpress_project_nw
-  # jenkins:
-  #   image: jenkins/jenkins:lts
-  #   container_name: jenkins
-  #   restart: always
-  #   privileged: true
-  #   user: root
-  #   ports:
-  #     - "9595:8080"
-  #     - "50000:50000"
-  #   volumes:
-  #     - jenkins_home:/var/jenkins_home
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    privileged: true
+    user: root
+    ports:
+      - "9595:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 
   elasticsearch:
     container_name: es-container
@@ -85,6 +85,7 @@ services:
       - vnexpress_project_nw
     ports:
       - 9200:9200
+
   kibana:
     container_name: kb-container
     image: docker.elastic.co/kibana/kibana:8.5.0 
@@ -106,4 +107,4 @@ networks:
     driver: bridge
 
 
-    # docker run -p 9797:8080 -p 50000:50000 -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+# docker run -p 9797:8080 -p 50000:50000 -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts

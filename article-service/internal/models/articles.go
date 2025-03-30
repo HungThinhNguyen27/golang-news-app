@@ -1,7 +1,7 @@
 package models
 
 type Article struct {
-	Id            int64  `json:"id"`
+	Id            string `json:"id"`
 	Title         string `json:"title" validate:"required"`
 	Description   string `json:"description" validate:"required"`
 	Category      string `json:"category" validate:"required"`
