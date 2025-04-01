@@ -22,7 +22,7 @@ func main() {
 		log.Fatal("Failed to load location:", err)
 	}
 	c := cron.New()
-	jobID, err := c.AddFunc("@every 30m", func() {
+	jobID, err := c.AddFunc("@every 1m", func() {
 		log.Println("Starting scheduled crawling task at", time.Now().In(loc))
 		articles := crawler.CrawlArticles()
 		for _, article := range articles {

@@ -21,7 +21,7 @@ type App struct {
 	Config         *configs.Config
 	Storage        *postgres.Postgres
 	ArticleService *services.ArticleServiceWithES
-	Router         *http.ServeMux
+	Router         http.Handler
 	Server         *http.Server
 }
 
@@ -43,22 +43,17 @@ func NewApp() (*App, error) {
 
 	// Initialize service
 	articleService := services.NewArticleServiceWithES(EsStorage)
-
-	// Setup router
 	router := routes.SetupRouter(articleService)
-
-	// Create server
-	server := &http.Server{
-		Addr:    cfg.Addr,
-		Handler: router,
-	}
 
 	return &App{
 		Config:         cfg,
 		Storage:        storage,
 		ArticleService: articleService,
 		Router:         router,
-		Server:         server,
+		Server: &http.Server{
+			Addr:    cfg.Addr,
+			Handler: router, // Giữ nguyên vì http.Server chấp nhận http.Handler
+		},
 	}, nil
 }
 

@@ -1,12 +1,12 @@
 package postgres
 
 import (
+	"article-service/internal/configs"
 	"article-service/internal/models"
 	"article-service/internal/utils"
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -32,50 +32,50 @@ func OpenDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-// func ConnectToDB() (*Postgres, error) {
-// 	env := configs.LoadEnv()
-
-// 	dsn := fmt.Sprintf(
-// 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-// 		env.POSTGRES_HOST, env.POSTGRES_PORT, env.POSTGRES_USER, env.POSTGRES_PASSWORD, env.POSTGRES_DB,
-// 	)
-// 	var counts int
-// 	maxRetries := 10
-
-// 	for counts < maxRetries {
-// 		connection, err := OpenDB(dsn)
-// 		if err == nil {
-// 			log.Println("Connected to PostgreSQL!")
-// 			return &Postgres{Db: connection}, nil
-// 		}
-// 		log.Printf("Postgres not yet ready (attempt %d), retrying...", counts+1)
-// 		counts++
-// 		time.Sleep(2 * time.Second)
-// 	}
-// 	return nil, fmt.Errorf("failed to connect to database after %d attempts", maxRetries)
-// }
-
-// ConnectToDB initializes and returns a Postgres storage instance
 func ConnectToDB() (*Postgres, error) {
-	dsn := os.Getenv("DSN")
-	if dsn == "" {
-		return nil, fmt.Errorf("DSN environment variable is not set")
-	}
+	env := configs.LoadEnv()
 
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		env.POSTGRES_HOST, env.POSTGRES_PORT, env.POSTGRES_USER, env.POSTGRES_PASSWORD, env.POSTGRES_DB,
+	)
 	var counts int
-	for counts < 10 {
+	maxRetries := 10
+
+	for counts < maxRetries {
 		connection, err := OpenDB(dsn)
 		if err == nil {
 			log.Println("Connected to PostgreSQL!")
 			return &Postgres{Db: connection}, nil
 		}
-
 		log.Printf("Postgres not yet ready (attempt %d), retrying...", counts+1)
 		counts++
 		time.Sleep(2 * time.Second)
 	}
-	return nil, fmt.Errorf("failed to connect to database after multiple attempts")
+	return nil, fmt.Errorf("failed to connect to database after %d attempts", maxRetries)
 }
+
+// ConnectToDB initializes and returns a Postgres storage instance
+// func ConnectToDB() (*Postgres, error) {
+// 	dsn := os.Getenv("DSN")
+// 	if dsn == "" {
+// 		return nil, fmt.Errorf("DSN environment variable is not set")
+// 	}
+
+// 	var counts int
+// 	for counts < 10 {
+// 		connection, err := OpenDB(dsn)
+// 		if err == nil {
+// 			log.Println("Connected to PostgreSQL!")
+// 			return &Postgres{Db: connection}, nil
+// 		}
+
+// 		log.Printf("Postgres not yet ready (attempt %d), retrying...", counts+1)
+// 		counts++
+// 		time.Sleep(2 * time.Second)
+// 	}
+// 	return nil, fmt.Errorf("failed to connect to database after multiple attempts")
+// }
 
 // GetArticleById fetches an article by ID
 func (p *Postgres) GetArticleById(id int64) (models.Article, error) {

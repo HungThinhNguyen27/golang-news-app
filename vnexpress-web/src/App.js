@@ -4,7 +4,7 @@ function App() {
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:6869/articles")
+    fetch("http://localhost:9090/api/articles")
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! Status: ${res.status}`);
@@ -13,9 +13,9 @@ function App() {
       })
       .then((data) => {
         console.log("data:", data);
-        setArticles(data);
+        setArticles(data.articles || []); // Đảm bảo lấy danh sách bài báo từ dữ liệu API
       })
-      .catch((err) => console.error("error when call API:", err));
+      .catch((err) => console.error("Error when calling API:", err));
   }, []);
 
   return (
@@ -23,28 +23,37 @@ function App() {
       <h1 style={styles.header}>VNExpress</h1>
       <ul style={styles.list}>
         {articles.length > 0 ? (
-          articles.map((article, index) => (
-            <li key={index} style={styles.card}>
-              {article.imageURL && (
+          articles.map((article) => (
+            <li key={article.id} style={styles.card}>
+              {article.imageURL ? (
                 <img
                   src={article.imageURL}
                   alt={article.title}
                   style={styles.image}
                 />
+              ) : (
+                <p>No Image Available</p>
               )}
               <h2>
-                <a href={article.url} target="_blank" rel="noopener noreferrer" style={styles.link}>
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={styles.link}
+                >
                   {article.title}
                 </a>
               </h2>
-              <p><strong>Date posted:</strong> {article.publishedDate}</p>
-              <p><strong>Category:</strong> {article.category}</p>
-              <p><strong>Topic:</strong> {article.subCategory}</p>
+              <p><strong>Date posted:</strong> {article.publishedDate || "Unknown"}</p>
+              <p><strong>Category:</strong> {article.category || "N/A"}</p>
+              {article.subCategory && (
+                <p><strong>Topic:</strong> {article.subCategory}</p>
+              )}
               <p>{article.description}</p>
             </li>
           ))
         ) : (
-          <p>There are no articles.</p>
+          <p>There are no articles available.</p>
         )}
       </ul>
     </div>

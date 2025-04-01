@@ -50,7 +50,7 @@ func CrawlArticles() []models.Article {
 			}
 			newHash := generateMD5(articleDetail.Content)
 			articleID := generateID(articleDetail.Title, articleDetail.PublishedDate)
-			author := extractAuthor(articleDetail.Content) // 🔹 Lấy tên tác giả
+			author := extractAuthor(articleDetail.Content) //
 
 			// checkExishHash := postgres.CheckHashExists(db, newHash) // check in db old hash compare new hash
 			checkExishHash, _ := elasticsearch.CheckHashExists(newHash) // check in db old hash compare new hash
