@@ -69,3 +69,45 @@ func (h *ArticleHanddlerWithES) GetAll(w http.ResponseWriter, r *http.Request) {
 		"articles":       articles,
 	})
 }
+
+func (h *ArticleHanddlerWithES) GetByCategory(w http.ResponseWriter, r *http.Request) {
+	maxLimit := 30
+	page := 1
+	limit := 10
+
+	categoryStr := r.URL.Query().Get("category")
+	if categoryStr == "Mới Nhất" {
+		categoryStr = "" // Use = for assignment in Go
+	}
+	// Get 'page' from query parameter
+	pageStr := r.URL.Query().Get("page")
+	if pageStr != "" {
+		p, err := strconv.Atoi(pageStr)
+		if err == nil && p > 0 {
+			page = p
+		}
+	}
+	// Get 'limit' from query parameter
+	limitStr := r.URL.Query().Get("limit")
+	if limitStr != "" {
+		l, err := strconv.Atoi(limitStr)
+		if err == nil && l > 0 && l <= maxLimit {
+			limit = l
+		}
+	}
+	slog.Info("Get List article With:", slog.String("category", categoryStr), slog.String("page", pageStr), slog.String("limit", limitStr))
+	articles, totalArticles, totalPages, err := h.services.GetByCategory(categoryStr, limit, page, maxLimit)
+	if err != nil {
+		log.Printf("Error fetching articles: %v", err)
+		response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+		return
+	}
+	// Return the article as JSON
+	response.WriteJson(w, http.StatusOK, map[string]interface{}{
+		"page":           page,
+		"limit":          limit,
+		"total_articles": totalArticles,
+		"total_pages":    totalPages,
+		"articles":       articles,
+	})
+}

@@ -14,11 +14,11 @@ func SetupRouter(articleService *services.ArticleServiceWithES) http.Handler {
 
 	router := http.NewServeMux()
 	router.HandleFunc("GET /api/article/{key_word}", articleHandler.GetByKeyWord)
-	router.HandleFunc("GET /api/articles", articleHandler.GetAll)
+	// router.HandleFunc("GET /api/articles", articleHandler.GetAll)
+	router.HandleFunc("GET /api/articles", articleHandler.GetByCategory)
 
-	// Thiết lập CORS
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Cho phép frontend truy cập
+		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,

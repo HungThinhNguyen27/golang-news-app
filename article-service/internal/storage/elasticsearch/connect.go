@@ -165,3 +165,70 @@ func (s *ArticleStorage) GetTotalArticles() (int, error) {
 	}
 	return countResponse.Count, nil
 }
+
+func (s *ArticleStorage) GetArticlesByCategory(category string, limit, offset int) ([]models.Article, error) {
+	var articles []models.Article
+	indexname := "articles"
+
+	searchQuery := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{},
+			},
+		},
+		"from": offset,
+		"size": limit,
+		"sort": []map[string]interface{}{
+			{"published_date.keyword": map[string]string{"order": "desc"}},
+		},
+	}
+
+	if category != "" {
+		searchQuery["query"].(map[string]interface{})["bool"].(map[string]interface{})["must"] = append(
+			searchQuery["query"].(map[string]interface{})["bool"].(map[string]interface{})["must"].([]map[string]interface{}),
+			map[string]interface{}{
+				"match": map[string]interface{}{"category": category},
+			},
+		)
+	} else {
+		searchQuery["query"] = map[string]interface{}{"match_all": map[string]interface{}{}}
+	}
+
+	queryBody, err := json.Marshal(searchQuery)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling query: %v", err)
+	}
+
+	res, err := s.esClient.Search(
+		s.esClient.Search.WithContext(context.Background()),
+		s.esClient.Search.WithIndex(indexname),
+		s.esClient.Search.WithBody(bytes.NewReader(queryBody)),
+		s.esClient.Search.WithPretty(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error executing search query: %v", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, fmt.Errorf("error response from Elasticsearch: %s", res.String())
+	}
+
+	var esResponse struct {
+		Hits struct {
+			Hits []struct {
+				Source models.Article `json:"_source"`
+			} `json:"hits"`
+		} `json:"hits"`
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(&esResponse); err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	for _, hit := range esResponse.Hits.Hits {
+		articles = append(articles, hit.Source)
+	}
+
+	return articles, nil
+}

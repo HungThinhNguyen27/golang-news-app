@@ -48,3 +48,26 @@ func (s *ArticleServiceWithES) GetAllArticles(limit int, page int, maxLimit int)
 
 	return articles, totalArticle, totalPages, nil
 }
+
+func (s *ArticleServiceWithES) GetByCategory(category string, limit int, page int, maxLimit int) ([]models.Article, int, int, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	} else if limit > maxLimit {
+		limit = maxLimit
+	}
+	offset := (page - 1) * limit
+	totalArticle, err := s.storage.GetTotalArticles()
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	articles, err := s.storage.GetArticlesByCategory(category, limit, offset)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	totalPages := (totalArticle + limit - 1) / limit
+
+	return articles, totalArticle, totalPages, nil
+}

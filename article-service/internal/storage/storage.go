@@ -15,5 +15,6 @@ type StorageWithElasticSearch interface {
 	GetAllArticles(limit int, offset int) ([]models.Article, error)
 	GetTotalArticles() (int, error)
 	GetArticlesByKeyWord(keyword string) ([]models.Article, error)
+	GetArticlesByCategory(category string, limit int, offset int) ([]models.Article, error)
 	// CreateArticle(article models.Article) (int64, error)
 }
