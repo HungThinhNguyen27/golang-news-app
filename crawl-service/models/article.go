@@ -1,13 +1,15 @@
 package models
 
 type Article struct {
-	Title         string
-	Description   string
-	Category      string
-	SubCategory   string
-	URL           string
-	PublishedDate string
-	ImageURL      string
-	Content       string
-	Hash          string
+	ID            string `json:"id"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	Category      string `json:"category"`
+	SubCategory   string `json:"sub_category"`
+	URL           string `json:"url"`
+	PublishedDate string `json:"published_date"`
+	ImageURL      string `json:"image_url"`
+	Content       string `json:"content"`
+	Hash          string `json:"hash"`
+	Author        string `json:"author"`
 }

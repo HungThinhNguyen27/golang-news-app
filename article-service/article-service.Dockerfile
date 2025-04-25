@@ -9,4 +9,4 @@ RUN go mod tidy
 
 RUN go build -o /app/main ./cmd 
 
-CMD ["/app/main", "-yaml", "local.yaml"]
+CMD ["/app/main"]

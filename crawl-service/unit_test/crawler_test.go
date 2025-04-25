@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"crawl-service/config"
+	"crawl-service/crawler"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,14 +10,14 @@ import (
 
 // Test FetchCategories
 func TestFetchCategories(t *testing.T) {
-	result := FetchCategories(config.BASE_URL, config.ALLOWED_DOMAINS)
+	result := crawler.FetchCategories(config.BASE_URL, config.ALLOWED_DOMAINS)
 	assert.NotEmpty(t, result, "Categories should not be empty")
 }
 
 // Test FetchArticlesURL
 func TestFetchArticlesURL(t *testing.T) {
 	CategoryURL := "https://vnexpress.net/cong-nghe"
-	result := FetchArticlesURL(CategoryURL, config.ALLOWED_DOMAINS)
+	result := crawler.FetchArticlesURL(CategoryURL, config.ALLOWED_DOMAINS)
 	assert.NotEmpty(t, result, "Article URLs should not be empty")
 }
 
@@ -24,7 +25,7 @@ func TestFetchArticlesURL(t *testing.T) {
 func TestFetchArticleDetail(t *testing.T) {
 
 	articleURL := "https://vnexpress.net/ap-luc-de-nang-ukraine-sau-khau-chien-cua-ong-trump-zelensky-vnepre-4855410.html"
-	result := FetchArticleDetail(articleURL, config.ALLOWED_DOMAINS)
+	result := crawler.FetchArticleDetail(articleURL, config.ALLOWED_DOMAINS)
 
 	assert.NotEmpty(t, result.Title, "Title should not be empty")
 	assert.NotEmpty(t, result.Description, "Description should not be empty")

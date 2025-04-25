@@ -5,10 +5,11 @@ go 1.23
 toolchain go1.24.0
 
 require (
+	github.com/elastic/go-elasticsearch/v8 v8.17.1
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/lib/pq v1.10.9
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.10.0
 	github.com/xuri/excelize/v2 v2.9.0
 )
 
@@ -19,6 +20,9 @@ require (
 	github.com/antchfx/xmlquery v1.4.4 // indirect
 	github.com/antchfx/xpath v1.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/elastic/elastic-transport-go/v8 v8.6.1 // indirect
+	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -31,6 +35,10 @@ require (
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
+	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
+	go.opentelemetry.io/otel v1.35.0 // indirect
+	go.opentelemetry.io/otel/metric v1.35.0 // indirect
+	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/text v0.22.0 // indirect

@@ -7,10 +7,11 @@ import (
 )
 
 func main() {
-	app, err := server.NewApp()
+	addr := "0.0.0.0:9090"
+	app, err := server.NewApp(addr)
 	if err != nil {
 		slog.Error("Application failed to start", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-	app.StartServer()
+	app.StartServer(addr)
 }
