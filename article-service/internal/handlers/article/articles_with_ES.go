@@ -33,6 +33,31 @@ func parsePaginationParams(r *http.Request) (int, int) {
 	return page, limit
 }
 
+func (h *ArticleHanddlerWithES) GetByCategory(w http.ResponseWriter, r *http.Request) {
+
+	page, limit := parsePaginationParams(r)
+	categoryStr := r.PathValue("category")
+	var (
+		articles      []models.Article
+		totalArticles int
+		totalPages    int
+		err           error
+	)
+	articles, totalArticles, totalPages, err = h.services.GetByCategory(categoryStr, limit, page, maxLimit)
+	if err != nil {
+		log.Printf("Error fetching articles: %v", err)
+		response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+		return
+	}
+	response.WriteJson(w, http.StatusOK, map[string]interface{}{
+		"page":           page,
+		"limit":          limit,
+		"total_articles": totalArticles,
+		"total_pages":    totalPages,
+		"articles":       articles,
+	})
+}
+
 func (h *ArticleHanddlerWithES) GetArticles(w http.ResponseWriter, r *http.Request) {
 	page, limit := parsePaginationParams(r)
 	keyWord := r.URL.Query().Get("keyword")
