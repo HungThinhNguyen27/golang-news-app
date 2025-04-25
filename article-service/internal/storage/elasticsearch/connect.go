@@ -36,14 +36,33 @@ func InitElasticsearch() (*ArticleStorage, error) {
 	return &ArticleStorage{esClient: client}, nil
 }
 
-func (s *ArticleStorage) GetArticlesByKeyWord(keyword string) ([]models.Article, error) {
+func (s *ArticleStorage) GetArticlesByKeyWord(keyword string, limit, offset int) ([]models.Article, error) {
 	indexName := "articles"
 	var articles []models.Article
+
+	searchQuery := map[string]interface{}{
+		"query": map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":  keyword,
+				"fields": []string{"category", "title"},
+			},
+		},
+		"from": offset,
+		"size": limit,
+		"sort": []map[string]interface{}{
+			{"published_date.keyword": map[string]string{"order": "desc"}},
+		},
+	}
+
+	queryBody, err := json.Marshal(searchQuery)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling query: %v", err)
+	}
 
 	res, err := s.esClient.Search(
 		s.esClient.Search.WithContext(context.Background()),
 		s.esClient.Search.WithIndex(indexName),
-		s.esClient.Search.WithQuery(keyword), //
+		s.esClient.Search.WithBody(bytes.NewReader(queryBody)),
 		s.esClient.Search.WithPretty(),
 	)
 	if err != nil {
@@ -70,6 +89,7 @@ func (s *ArticleStorage) GetArticlesByKeyWord(keyword string) ([]models.Article,
 	for _, hit := range esResponse.Hits.Hits {
 		articles = append(articles, hit.Source)
 	}
+
 	return articles, nil
 }
 
@@ -127,14 +147,47 @@ func (s *ArticleStorage) GetAllArticles(limit, offset int) ([]models.Article, er
 	return articles, nil
 }
 
-func (s *ArticleStorage) GetTotalArticles() (int, error) {
-
+func (s *ArticleStorage) CountArticles(keyword string, category string) (int, error) {
 	indexName := "articles"
 
-	countQuery := map[string]interface{}{
-		"query": map[string]interface{}{
+	// Build dynamic bool query
+	boolQuery := map[string]interface{}{}
+
+	// match all if dont have filter
+	if keyword == "" && category == "" {
+		boolQuery = map[string]interface{}{
 			"match_all": map[string]interface{}{},
-		},
+		}
+	} else {
+		mustQueries := []map[string]interface{}{}
+
+		if keyword != "" {
+			mustQueries = append(mustQueries, map[string]interface{}{
+				"multi_match": map[string]interface{}{
+					"query":  keyword,
+					"fields": []string{"title", "description", "content"},
+				},
+			})
+		}
+
+		if category != "" {
+			mustQueries = append(mustQueries, map[string]interface{}{
+				"match": map[string]interface{}{
+					"category": category,
+				},
+			})
+		}
+
+		boolQuery = map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": mustQueries,
+			},
+		}
+	}
+
+	// Final count query
+	countQuery := map[string]interface{}{
+		"query": boolQuery,
 	}
 
 	queryBody, err := json.Marshal(countQuery)
