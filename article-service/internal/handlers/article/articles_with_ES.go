@@ -3,9 +3,8 @@ package article
 import (
 	"article-service/internal/models"
 	"article-service/internal/services"
-	"article-service/internal/utils/response"
+	response "article-service/internal/utils"
 	"log"
-	"log/slog"
 	"net/http"
 	"strconv"
 )
@@ -18,130 +17,41 @@ func NewArticleHandlerWithES(s *services.ArticleServiceWithES) *ArticleHanddlerW
 	return &ArticleHanddlerWithES{services: s}
 }
 
-// func (h *ArticleHanddlerWithES) GetByKeyWord(w http.ResponseWriter, r *http.Request) {
+const maxLimit = 30
 
-// 	keyWord := r.PathValue("key_word")
-// 	slog.Info("Fetching article", slog.String("key_word", keyWord))
-
-// 	articles, err := h.services.GetByKeyWord(keyWord)
-// 	if err != nil {
-// 		slog.Error("Error fetching article", slog.String("key_word", keyWord))
-// 		response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
-// 		return
-// 	}
-// 	// Return the article as JSON
-// 	response.WriteJson(w, http.StatusOK, articles)
-// }
-
-func (h *ArticleHanddlerWithES) GetAll(w http.ResponseWriter, r *http.Request) {
-	maxLimit := 30
+func parsePaginationParams(r *http.Request) (int, int) {
 	page := 1
 	limit := 10
 
-	// Get 'page' from query parameter
-	pageStr := r.URL.Query().Get("page")
-	if pageStr != "" {
-		p, err := strconv.Atoi(pageStr)
-		if err == nil && p > 0 {
-			page = p
-		}
+	if p, err := strconv.Atoi(r.URL.Query().Get("page")); err == nil && p > 0 {
+		page = p
 	}
-	// Get 'limit' from query parameter
-	limitStr := r.URL.Query().Get("limit")
-	if limitStr != "" {
-		l, err := strconv.Atoi(limitStr)
-		if err == nil && l > 0 && l <= maxLimit {
-			limit = l
-		}
+	if l, err := strconv.Atoi(r.URL.Query().Get("limit")); err == nil && l > 0 && l <= maxLimit {
+		limit = l
 	}
-	slog.Info("Get List article With:", slog.String("page", pageStr), slog.String("limit", limitStr))
-	articles, totalArticles, totalPages, err := h.services.GetAllArticles(limit, page, maxLimit)
-	if err != nil {
-		log.Printf("Error fetching articles: %v", err)
-		response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
-		return
-	}
-	// Return the article as JSON
-	response.WriteJson(w, http.StatusOK, map[string]interface{}{
-		"page":           page,
-		"limit":          limit,
-		"total_articles": totalArticles,
-		"total_pages":    totalPages,
-		"articles":       articles,
-	})
-}
 
-func (h *ArticleHanddlerWithES) GetByCategory(w http.ResponseWriter, r *http.Request) {
-	maxLimit := 30
-	page := 1
-	limit := 10
-
-	categoryStr := r.URL.Query().Get("category")
-	if categoryStr == "Mới Nhất" {
-		categoryStr = "" // Use = for assignment in Go
-	}
-	// Get 'page' from query parameter
-	pageStr := r.URL.Query().Get("page")
-	if pageStr != "" {
-		p, err := strconv.Atoi(pageStr)
-		if err == nil && p > 0 {
-			page = p
-		}
-	}
-	// Get 'limit' from query parameter
-	limitStr := r.URL.Query().Get("limit")
-	if limitStr != "" {
-		l, err := strconv.Atoi(limitStr)
-		if err == nil && l > 0 && l <= maxLimit {
-			limit = l
-		}
-	}
-	slog.Info("Get List article With:", slog.String("category", categoryStr), slog.String("page", pageStr), slog.String("limit", limitStr))
-	articles, totalArticles, totalPages, err := h.services.GetByCategory(categoryStr, limit, page, maxLimit)
-	if err != nil {
-		log.Printf("Error fetching articles: %v", err)
-		response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
-		return
-	}
-	// Return the article as JSON
-	response.WriteJson(w, http.StatusOK, map[string]interface{}{
-		"page":           page,
-		"limit":          limit,
-		"total_articles": totalArticles,
-		"total_pages":    totalPages,
-		"articles":       articles,
-	})
+	return page, limit
 }
 
 func (h *ArticleHanddlerWithES) GetArticles(w http.ResponseWriter, r *http.Request) {
+	page, limit := parsePaginationParams(r)
 	keyWord := r.URL.Query().Get("keyword")
 	categoryStr := r.URL.Query().Get("category")
-	limitStr := r.URL.Query().Get("limit")
-	pageStr := r.URL.Query().Get("page")
 
-	// Default values
-	limit := 10
-	page := 1
-	maxLimit := 30
-
-	if l, err := strconv.Atoi(limitStr); err == nil {
-		limit = l
-	}
-	if p, err := strconv.Atoi(pageStr); err == nil {
-		page = p
-	}
-
-	var articles []models.Article
-	var totalArticles, totalPages int
-	var err error
+	var (
+		articles      []models.Article
+		totalArticles int
+		totalPages    int
+		err           error
+	)
 
 	switch {
+	case keyWord != "" && categoryStr != "":
+		articles, totalArticles, totalPages, err = h.services.GetByKeywordAndCategory(keyWord, categoryStr, limit, page, maxLimit)
 	case keyWord != "":
 		articles, totalArticles, totalPages, err = h.services.GetByKeyWord(keyWord, limit, page, maxLimit)
-
 	case categoryStr != "":
 		articles, totalArticles, totalPages, err = h.services.GetByCategory(categoryStr, limit, page, maxLimit)
-
 	default:
 		articles, totalArticles, totalPages, err = h.services.GetAllArticles(limit, page, maxLimit)
 	}
@@ -152,7 +62,6 @@ func (h *ArticleHanddlerWithES) GetArticles(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Return the articles as JSON
 	response.WriteJson(w, http.StatusOK, map[string]interface{}{
 		"page":           page,
 		"limit":          limit,

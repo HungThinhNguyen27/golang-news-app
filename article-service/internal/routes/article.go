@@ -13,9 +13,7 @@ func SetupRouter(articleService *services.ArticleServiceWithES) http.Handler {
 	articleHandler := article.NewArticleHandlerWithES(articleService)
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /api/articles", articleHandler.GetArticles)
-	// router.HandleFunc("GET /api/articles/search", articleHandler.GetAll)
-	// router.HandleFunc("GET /api/articles/section", articleHandler.GetByCategory)
+	router.HandleFunc("GET /articles", articleHandler.GetArticles)
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
