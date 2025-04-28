@@ -43,6 +43,27 @@ services:
     networks:
       - vnexpress_project_nw
 
+  auth-service: 
+    build: 
+      context: ./auth-service
+      dockerfile: auth-service.Dockerfile
+    restart: always
+    ports:
+      - "8081:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      - DSN=host=${POSTGRES_HOST} 
+            port=${POSTGRES_PORT} 
+            user=${POSTGRES_USER} 
+            password=${POSTGRES_PASSWORD} 
+            dbname=${POSTGRES_DB} 
+            sslmode=disable 
+            timezone=UTC 
+            connect_timeout=5
+
+
   # crawl-sv:
   #   build:
   #     context: ./crawl-service
