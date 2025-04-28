@@ -1,11 +1,11 @@
 package server
 
 import (
-	"article-service/internal/configs"
+	"article-service/internal/repo/elasticsearch"
 	"article-service/internal/routes"
 	"article-service/internal/services"
-	"article-service/internal/storage/postgres"
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,52 +16,43 @@ import (
 
 // App struct to manage dependencies
 type App struct {
-	Config         *configs.Config
-	Storage        *postgres.Postgres
-	ArticleService *services.ArticleService
-	Router         *http.ServeMux
+	ArticleService *services.ArticleServiceWithES
+	Router         http.Handler
 	Server         *http.Server
 }
 
 // NewApp initializes all dependencies
-func NewApp() (*App, error) {
-	cfg := configs.MustLoad()
+func NewApp(addr string) (*App, error) {
 
-	// Initialize database
-	storage, err := postgres.ConnectToDB()
+	// ES
+	esStorage, err := elasticsearch.InitElasticsearch()
 	if err != nil {
-		return nil, err
+		fmt.Println("Error initializing Elasticsearch:", err)
+		return nil, err // Đừng quên return nếu có lỗi
 	}
 
 	// Initialize service
-	articleService := services.NewArticleService(storage)
-
-	// Setup router
+	articleService := services.NewArticleServiceWithES(esStorage)
 	router := routes.SetupRouter(articleService)
 
-	// Create server
-	server := &http.Server{
-		Addr:    cfg.Addr,
-		Handler: router,
-	}
-
 	return &App{
-		Config:         cfg,
-		Storage:        storage,
 		ArticleService: articleService,
 		Router:         router,
-		Server:         server,
+		Server: &http.Server{
+			Addr:    addr,
+			Handler: router,
+		},
 	}, nil
 }
 
 // StartServer runs the HTTP server and handles graceful shutdown
-func (app *App) StartServer() {
+func (app *App) StartServer(addr string) {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start server in a goroutine
 	go func() {
-		slog.Info("Server started", slog.String("address", app.Config.Addr))
+		slog.Info("Server started", slog.String("address", addr))
 		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("Failed to start server", slog.String("error", err.Error()))
 			os.Exit(1)

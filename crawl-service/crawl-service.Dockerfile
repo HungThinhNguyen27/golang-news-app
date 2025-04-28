@@ -4,9 +4,8 @@ WORKDIR /app
 
 COPY . .
 
-# add necessary dependencies
 RUN go mod tidy 
 
-RUN go build -o main .
+RUN go build -o main ./cmd
 
 CMD ["/app/main"]

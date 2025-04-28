@@ -28,7 +28,7 @@ func CreateArticlesTable(db *sql.DB) {
 	log.Println("The articles table has been created")
 }
 
-func SaveArticle(db *sql.DB, article models.Article) {
+func SaveArticle(db *sql.DB, article models.Article) error {
 
 	query := `
 	INSERT INTO articlesTable (title, description, category, sub_category, url, published_date, image_url, content, hash)
@@ -37,10 +37,12 @@ func SaveArticle(db *sql.DB, article models.Article) {
 	_, err := db.Exec(query, article.Title, article.Description, article.Category, article.SubCategory, article.URL, article.PublishedDate, article.ImageURL, article.Content, article.Hash)
 	if err != nil {
 		log.Println("Error when save data to articles table", err)
+		return err
+
 	}
 	log.Println("---------------------")
 	log.Println("saved successfully:", article.Title)
-
+	return nil
 }
 
 func CheckHashExists(db *sql.DB, hash string) bool {

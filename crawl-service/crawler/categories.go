@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -19,7 +18,7 @@ func FetchCategories(baseURL string, allowedDomains string) []string {
 
 		if categoryURL != "" && !strings.Contains(categoryURL, "javascript") {
 			fullURL := baseURL + categoryURL
-			fmt.Println("Found category:", fullURL)
+			// fmt.Println("Found category:", fullURL)
 			categoriesURL = append(categoriesURL, fullURL) // Store category URL
 
 		}

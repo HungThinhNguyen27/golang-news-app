@@ -4,17 +4,24 @@ import (
 	"article-service/internal/handlers/article"
 	"article-service/internal/services"
 	"net/http"
+
+	"github.com/rs/cors"
 )
 
-// SetupRouter registers all API routes
-func SetupRouter(articleService *services.ArticleService) *http.ServeMux {
-	articleHandler := article.NewArticleHandler(articleService)
+// SetupRouter registers all API routes with CORS enabled
+func SetupRouter(articleService *services.ArticleServiceWithES) http.Handler {
+	articleHandler := article.NewArticleHandlerWithES(articleService)
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /api/article/{id}", articleHandler.GetByID)
-	router.HandleFunc("GET /api/articles", articleHandler.GetList)
-	router.HandleFunc("PUT /api/article/{id}", articleHandler.Update)
-	router.HandleFunc("DELETE /api/article/{id}", articleHandler.Delete)
-	router.HandleFunc("POST /api/article", articleHandler.Create)
-	return router
+	router.HandleFunc("GET /articles", articleHandler.GetArticles)
+	router.HandleFunc("GET /{category}", articleHandler.GetByCategory)
+
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}).Handler(router)
+
+	return corsHandler
 }
