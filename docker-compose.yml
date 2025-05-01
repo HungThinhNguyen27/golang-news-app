@@ -13,6 +13,8 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+    networks:
+      - vnexpress_project_nw
 
   postgres:
     image : 'postgres:14.0'
@@ -54,14 +56,9 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      - DSN=host=${POSTGRES_HOST} 
-            port=${POSTGRES_PORT} 
-            user=${POSTGRES_USER} 
-            password=${POSTGRES_PASSWORD} 
-            dbname=${POSTGRES_DB} 
-            sslmode=disable 
-            timezone=UTC 
-            connect_timeout=5
+      DSN: "host=postgres port=5432 user=postgres password=root dbname=UserDatabase sslmode=disable timezone=UTC connect_timeout=5"
+    networks:
+      - vnexpress_project_nw
 
 
   # crawl-sv:
@@ -137,7 +134,9 @@ volumes:
     
 networks:
   vnexpress_project_nw:
-    driver: bridge
-
 
 # docker run -p 9797:8080 -p 50000:50000 -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+
+
+# docker network connect vnexpress_project_nw golang-news-app-auth-service-1
+

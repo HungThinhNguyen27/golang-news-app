@@ -260,3 +260,13 @@ func (u *User) PasswordMatches(plainText string) (bool, error) {
 
 	return true, nil
 }
+
+func (u *User) SetPassword(plain string) (bool, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(plain), 12)
+	if err != nil {
+		return err
+	}
+	u.Password = string(hashed)
+	return nil
+
+}

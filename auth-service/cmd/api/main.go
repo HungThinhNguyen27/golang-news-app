@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	_ "github.com/jackc/pgconn"
@@ -14,7 +13,7 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-const wedPort = "80"
+const webPort = "80"
 
 var counts int64
 
@@ -26,19 +25,20 @@ type Config struct {
 func main() {
 	log.Println("Starting authentication service")
 
-	// To do connect to DB
-	conn := connectToDb()
+	// connect to DB
+	conn := connectToDB()
 	if conn == nil {
 		log.Panic("Can't connect to Postgres!")
 	}
-	// Set up config
+
+	// set up config
 	app := Config{
 		DB:     conn,
 		Models: data.New(conn),
 	}
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", wedPort),
+		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
 
@@ -49,6 +49,7 @@ func main() {
 }
 
 func openDB(dsn string) (*sql.DB, error) {
+	log.Println("Attempting to connect to Postgres...", dsn)
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
@@ -58,25 +59,30 @@ func openDB(dsn string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return db, nil
 }
 
-func connectToDb() *sql.DB {
-	dsn := os.Getenv("DSN")
+func connectToDB() *sql.DB {
+	dsn := "host=localhost port=5432 user=postgres password=root dbname=UserDatabase sslmode=disable timezone=UTC connect_timeout=5"
+	counts := 0
+
 	for {
 		connection, err := openDB(dsn)
 		if err != nil {
 			log.Println("Postgres not yet ready ...")
+			counts++
 		} else {
 			log.Println("Connected to Postgres!")
 			return connection
 		}
+
 		if counts > 10 {
-			log.Println(err)
+			log.Println("Too many attempts to connect to database. Exiting.")
 			return nil
 		}
-		log.Println("Backing off for two seconds ...")
+
+		log.Println("Backing off for two seconds....")
 		time.Sleep(2 * time.Second)
-		continue
 	}
 }
